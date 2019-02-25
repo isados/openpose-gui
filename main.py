@@ -16,15 +16,17 @@ def disableButtons(btns):
     for btn in btns: app.disableButton(btn)
 
 # Control what elements are enabled
-def setStopMode():
+def setStopMode(_=None):
     app.disableButton('Start')
     app.enableButton('Stop')
     app.enableButton('Exit')
 
-def setStartMode():
+def setStartMode(_=None):
+    thread['openpose']='stopped'
     app.enableButton('Start')
     app.disableButton('Stop')
     app.enableButton('Exit')
+
 #
 # def enableButtons(btns):
 #     for btn in btns: app.enableButton(btn)
@@ -33,9 +35,12 @@ def stopFunction():
     if res:
         disableButtons(list_buttons)
         thread['cmd']='stop'
-        daemon.kill()
-        while(thread['status'] is not 'stopped'):
-            continue
+        app.threadCallback(daemon.kill,setStartMode)
+
+        while(not (thread['predictor'] == 'stopped' and \
+                    thread['openpose'] == 'stopped')):
+            print(thread['openpose'],thread['predictor'])
+        print(thread['openpose'],thread['predictor'])
     return res
 
 def doSomething(_=None):
@@ -47,25 +52,28 @@ def stopSomething(_=None):
     app.setLabel("target","")
     app.setLabelBg("target","purple")
     thread["cmd"]=''
-    thread["status"]='stopped'
+    thread["predictor"]='stopped'
 
 def btn_functions(btn):
     if btn=='Start':
         #Start a thread, and disable GUI elements
-        setStopMode()
+        disableButtons(list_buttons)
 
+
+        thread["predictor"]='running';thread['openpose']='running'
+        thread['cmd']=''
         #Start OpenPose script
         app.thread(daemon.start)
 
         # Start Prediction
-        thread["status"]='running'
-        thread['cmd']=''
+        setStopMode()
         app.threadCallback(doSomething,stopSomething)
+
     elif btn=='Stop':
-        setStartMode()
+        disableButtons(list_buttons)
 
         #Stop OpenPose script
-        app.thread(daemon.kill)
+        app.threadCallback(daemon.kill,setStartMode)
 
         # Stops prediction
         thread["cmd"]='stop'

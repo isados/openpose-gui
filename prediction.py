@@ -1,6 +1,6 @@
 import time
 
-thread={'status':'stopped','cmd':''} # Global flag
+thread={'predictor':'stopped','openpose':'stopped','cmd':''} # Global flag
 
 switch_colors=['blue','red']
 labels=['left arm up','right arm up']
