@@ -43,7 +43,7 @@ def exitFunction():
 
 def doSomething(_=None):
     # Prediction algorithm, and pass the app object for writing labels
-    return prediction(7,app,"white")
+    return prediction(app)
 
 
 def press(btn):
