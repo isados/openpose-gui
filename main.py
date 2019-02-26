@@ -28,15 +28,11 @@ def setStartMode(_=None):
     app.enableButton('Exit')
     print("OpenPose stopped")
 
-#
-# def enableButtons(btns):
-#     for btn in btns: app.enableButton(btn)
-def stopFunction():
+def exitFunction():
     res=app.yesNoBox("Confirm Exit", "Are you sure you want to exit?")
     if res:
         disableButtons(list_buttons)
         thread['cmd']='stop'
-        # app.threadCallback(daemon.kill,setStartMode)
         daemon.kill()
         setStartMode()
         while(not (thread['predictor'] == 'stopped' and \
@@ -50,7 +46,7 @@ def doSomething(_=None):
     return prediction(7,app,"purple")
 
 
-def btn_functions(btn):
+def press(btn):
     if btn=='Start':
         #Start a thread, and disable GUI elements
         disableButtons(list_buttons)
@@ -90,14 +86,16 @@ app.setLabelFg("title", "orange")
 
 # link the buttons to the function called
 
-app.addButtons(list_buttons,btn_functions)
+app.addButtons(list_buttons,press)
 app.disableButton('Stop')
 
 app.addLabel("target", "")
 app.setLabelBg("target", "purple")
+
+# Remove .pid files that linger
 [os.unlink(path) for path in glob.glob("*.pid")]
 
-app.stopFunction=stopFunction
+app.stopFunction=exitFunction
 
 # start the GUI
 app.go()
