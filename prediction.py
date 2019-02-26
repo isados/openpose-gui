@@ -10,8 +10,17 @@ def prediction(sec,app,orig_color):
         app.queueFunction(app.setLabelBg,"target",switch_colors[x%2])
         app.queueFunction(app.setLabel,"target",labels[x%2])
         if thread["cmd"]=='stop':
-            return None
-    return None
+            _stop_prediction(app,orig_color);return
+
+    _stop_prediction(app,orig_color)
+
+def _stop_prediction(app,orig_color):
+    delete_all_images()
+    app.queueFunction(app.setLabel,"target","")
+    app.queueFunction(app.setLabelBg,"target","purple")
+    thread["cmd"]=''
+    thread["predictor"]='stopped'
+    print("Prediction stopped...")
 
 def delete_all_images():
     pass

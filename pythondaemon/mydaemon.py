@@ -22,23 +22,3 @@ class MyDaemon(Daemon):
                 os.unlink(f"./{init_script}.pid")
                 self.stop()
         else: print("Process has not started!")
-
-def run(self):
-    # Launch the OpenPose script & save the PID to a file
-    os.system(f"./{init_script}.sh")
-
-# def MyDaemon(state):
-#     pineMarten = pantalaimon('mydaemon.pid')
-#     if state in ('start', 'stop', 'restart','kill'):
-#         pineMarten = pantalaimon('mydaemon.pid')
-#         getattr(pineMarten, state)()
-#     return
-#
-# pineMarten = pantalaimon('mydaemon.pid')
-# if len(sys.argv) == 1:
-#     pass
-# elif len(sys.argv) == 2:
-#     arg = sys.argv[1]
-#     if arg in ('start', 'stop', 'restart','kill'):
-#         pineMarten = pantalaimon('mydaemon.pid')
-#         getattr(pineMarten, arg)()
