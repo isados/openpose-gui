@@ -75,22 +75,27 @@ def press(btn):
             app.stop()
 
 # create a GUI variable called app
-app = gui("OpenPose Interface", "400x200")
-app.setBg("orange")
+app = gui("GUI Interface", "400x300")
+app.setBg("lightblue")
 app.setFont(18)
 
 # add & configure widgets - widgets get a name, to help referencing them later
-app.addLabel("title", "Welcome to appJar")
-app.setLabelBg("title", "blue")
-app.setLabelFg("title", "orange")
+app.addLabel("title", "Aqua Shield (Beta Edition v0.1)")
+app.setLabelBg("title", "black")
+app.setLabelFg("title", "lightblue")
 
 # link the buttons to the function called
 
 app.addButtons(list_buttons,press)
 app.disableButton('Stop')
 
-app.addLabel("target", "")
-app.setLabelBg("target", "white")
+# app.addLabel("target", "")
+# app.setLabelBg("target", "white")
+app.addMessage('target', """Welcome to the AquaShield - OpenPose Interface
+
+Push the START button to begin...""")
+app.setMessageBg('target','white')
+app.setMessageAspect('target', 150)
 
 # Remove .pid files that linger
 [os.unlink(path) for path in glob.glob("*.pid")]
