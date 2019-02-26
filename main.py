@@ -43,7 +43,7 @@ def exitFunction():
 
 def doSomething(_=None):
     # Prediction algorithm, and pass the app object for writing labels
-    return prediction(7,app,"purple")
+    return prediction(7,app,"white")
 
 
 def press(btn):
@@ -90,7 +90,7 @@ app.addButtons(list_buttons,press)
 app.disableButton('Stop')
 
 app.addLabel("target", "")
-app.setLabelBg("target", "purple")
+app.setLabelBg("target", "white")
 
 # Remove .pid files that linger
 [os.unlink(path) for path in glob.glob("*.pid")]
