@@ -5,6 +5,7 @@ import serial
 
 thread={'predictor':'stopped','openpose':'stopped','cmd':''} # Global flag
 folder='../data/keypoint_json'
+arduino_device="/dev/ttyUSB0"
 # switch_colors=['blue','red']
 # labels=['left arm up','right arm up']
 
@@ -16,11 +17,11 @@ def prediction(app):
     _delete_all_json_files()
     prev_label=None # This is to note the last predicted label, to avoid printing it twice
 
-    # Access serial for write operations
+    # Access serial port for write operations
     past=time.time()
     try:
-        ser = serial.Serial("/dev/ttyUSB0",115200)
-    else:
+        ser = serial.Serial(arduino_device,115200)
+    except:
         ser = None
 
     while(1):
@@ -38,6 +39,10 @@ def prediction(app):
             if ser is not None and (time.time() - past) > 1:
                 ser.write(f'{label}'.encode())
                 past=time.time()
+        
+        # To prevent overloading the disk
+        if len(list_of_json_files) > 300:
+            _delete_all_json_files()
 
         #Exit Flag
         if thread["cmd"]=='stop':
