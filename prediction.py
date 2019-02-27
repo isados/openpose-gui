@@ -39,6 +39,7 @@ def prediction(app):
                 displayed_label=label
                 if isinstance(label,list):
                     first_person=label[0]
+                    if "Left Arm's Up" in label: first_person="Left Arm's Up"
                     if ser is not None:
                         try:
                             ser.write(f'{first_person}'.encode())
