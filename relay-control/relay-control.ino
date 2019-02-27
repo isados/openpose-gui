@@ -1,8 +1,10 @@
-#include<Wire.h>
+#define RELAY 8
 
 String label;
+
 void setup() {
   // put your setup code here, to run once:
+  pinMode(RELAY,OUTPUT);
   pinMode(LED_BUILTIN,OUTPUT);
   Serial.begin(115200);
 }
@@ -12,10 +14,15 @@ void loop() {
   if (Serial.available() > 0){
     label=Serial.readString();
     Serial.println(label);
-    if (label =="Both Arms Up")
+    if (label =="Left Arm's Up"){
+      digitalWrite(RELAY,HIGH);
       digitalWrite(LED_BUILTIN,HIGH);
-   else
-      digitalWrite(LED_BUILTIN,LOW); 
   }
+   else{
+       digitalWrite(RELAY,LOW); 
+      digitalWrite(LED_BUILTIN,LOW);
+      }
+  }
+  
   
 }

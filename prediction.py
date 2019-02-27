@@ -5,44 +5,50 @@ import serial
 
 thread={'predictor':'stopped','openpose':'stopped','cmd':''} # Global flag
 folder='../data/keypoint_json'
-arduino_device="/dev/ttyUSB0"
-# switch_colors=['blue','red']
-# labels=['left arm up','right arm up']
+ARDUINO_DEVICE="/dev/ttyACM2"
+DEBOUNCE_DELAY=0.5
+MAX_NUM_OF_FILES=300
+lastDebounceTime=0
 
 def prediction(app):
-    # for x in range(sec):
-    #     time.sleep(1)
-    #     app.queueFunction(app.setMessageBg,"target",switch_colors[x%2])
-    #     app.queueFunction(app.setMessage,"target",labels[x%2])
     _delete_all_json_files()
     prev_label=None # This is to note the last predicted label, to avoid printing it twice
-
+    displayed_label=None
     # Access serial port for write operations
-    past=time.time()
+
     try:
-        ser = serial.Serial(arduino_device,115200)
+        ser = serial.Serial(ARDUINO_DEVICE,115200)
     except:
         ser = None
-
+    global lastDebounceTime
     while(1):
         list_of_json_files=sorted(os.listdir(folder))
 
         if len(list_of_json_files)==0:
             label='Folder Empty'
+        # To prevent overloading the disk
+        elif len(list_of_json_files) > MAX_NUM_OF_FILES:
+            _delete_all_json_files()
+            label='Folder Empty'
         else: #Folder not empty
             label=_return_label_from_jsonfiles(list_of_json_files)
 
         # Display label and serial write to Arduino in fixed time intervals
-        if prev_label!=label:
+        if label == prev_label and (time.time() - lastDebounceTime) > DEBOUNCE_DELAY:
+            if displayed_label != label:
+                displayed_label=label
+                if isinstance(label,list):
+                    first_person=label[0]
+                    if ser is not None:
+                        try:
+                            ser.write(f'{first_person}'.encode())
+                        except:
+                            print("Error: Serial Write to Arduino doesn't work.")
+                    label="\n".join([f'Person {i+1} : {label[i]}' for i in range(len(label))])
+                app.queueFunction(app.setMessage,"target",label)
+        elif label != prev_label:
             prev_label=label
-            app.queueFunction(app.setMessage,"target",label)
-            if ser is not None and (time.time() - past) > 1:
-                ser.write(f'{label}'.encode())
-                past=time.time()
-        
-        # To prevent overloading the disk
-        if len(list_of_json_files) > 300:
-            _delete_all_json_files()
+            lastDebounceTime = time.time()
 
         #Exit Flag
         if thread["cmd"]=='stop':
@@ -92,9 +98,9 @@ def _return_label_from_jsonfiles(list_of_json_files):
                     if left_arm_up and right_arm_up:
                         label='Both Arms Up'
                     elif left_arm_up:
-                        label='Left Arm\'s Up'
+                        label="Left Arm's Up"
                     elif right_arm_up:
-                        label='Right Arm\'s Up'
+                        label="Right Arm's Up"
                     else:
                         label='Both Arms Down'
 
@@ -111,7 +117,8 @@ def _return_label_from_jsonfiles(list_of_json_files):
             .
             Person N : ....
             """
-            return "\n".join([f'Person {i+1} : {list_of_persons_label[i]}' for i in range(num_of_persons)])
+
+            return list_of_persons_label
 
     except:
         return 'Folder Empty'
