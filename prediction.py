@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import serial
 
 thread={'predictor':'stopped','openpose':'stopped','cmd':''} # Global flag
 folder='../data/keypoint_json'
@@ -14,6 +15,14 @@ def prediction(app):
     #     app.queueFunction(app.setMessage,"target",labels[x%2])
     _delete_all_json_files()
     prev_label=None # This is to note the last predicted label, to avoid printing it twice
+
+    # Access serial for write operations
+    past=time.time()
+    try:
+        ser = serial.Serial("/dev/ttyUSB0",115200)
+    else:
+        ser = None
+
     while(1):
         list_of_json_files=sorted(os.listdir(folder))
 
@@ -22,16 +31,17 @@ def prediction(app):
         else: #Folder not empty
             label=_return_label_from_jsonfiles(list_of_json_files)
 
-        # Display label
+        # Display label and serial write to Arduino in fixed time intervals
         if prev_label!=label:
             prev_label=label
             app.queueFunction(app.setMessage,"target",label)
-        else:
-            pass
+            if ser is not None and (time.time() - past) > 1:
+                ser.write(f'{label}'.encode())
+                past=time.time()
 
         #Exit Flag
         if thread["cmd"]=='stop':
-            _stop_prediction(app);return
+            _stop_prediction(app,ser);return
 
 def _return_label_from_jsonfiles(list_of_json_files):
     try: #Check if second last json file can be read
@@ -58,6 +68,9 @@ def _return_label_from_jsonfiles(list_of_json_files):
                     cordinates={keypoint_parts_list[index]:pose_keypoints[keypoint_indices[index]*3+1] \
                                 for index in range(4) \
                                     if pose_keypoints[keypoint_indices[index]*3+2] > 0}
+                    # cordinates={part:pose_keypoints[parts_to_POSE18format[part]*3+1] \
+                    #             for part in keypoint_parts_list \
+                    #             if pose_keypoints[parts_to_POSE18format[part]*3+1] > 0}
 
                     # Judgment
                     right_arm_up=False
@@ -98,8 +111,9 @@ def _return_label_from_jsonfiles(list_of_json_files):
     except:
         return 'Folder Empty'
 
-def _stop_prediction(app):
+def _stop_prediction(app,serial_port):
     _delete_all_json_files()
+    if serial_port is not None: serial_port.write(b'off'); serial_port.close()
     app.queueFunction(app.setMessage,"target","")
     thread["cmd"]=''
     thread["predictor"]='stopped'
